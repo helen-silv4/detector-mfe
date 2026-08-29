@@ -1,59 +1,61 @@
-# DetectorMfe
+## 🛩️ **Drone Waste Monitoring - Frontend**
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.13.
+Frontend em Angular do painel de controle do drone, responsável por exibir o vídeo, telemetria básica e disparar rotinas de teste/voo através da API.
 
-## Development server
+Este repositório faz parte do TCC Drone Waste Monitoring, junto com:
+- [detector_de_lixo](https://github.com/Jhonydev72/detector_de_lixo): scripts de controle de voo, visão computacional e YOLOv8
+- [detector-api](https://github.com/helen-silv4/detector-api): API que intermedia a comunicação entre o frontend e o drone
 
-To start a local development server, run:
+### **Status atual**
+
+🚧 Em desenvolvimento. Consumindo endpoints simulados (mock) da API enquanto o drone físico não está disponível para testes.
+
+### **Requisitos**
+
+- Node.js 24+
+- Angular CLI (`npm install -g @angular/cli`)
+- [detector-api](https://github.com/helen-silv4/detector-api) rodando em `http://localhost:8000`
+
+### **Configuração**
+
+Clone o repositório e entre na pasta:
+
+```bash
+git clone https://github.com/helen-silv4/detector-mfe.git
+cd detector-mfe
+```
+
+Instale as dependências:
+
+```bash
+npm install
+```
+
+### **Execução**
+
+Certifique-se de que a API (`detector-api`) está rodando antes de iniciar o frontend.
 
 ```bash
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Acesse `http://localhost:4200/`. A aplicação recarrega automaticamente ao salvar alterações.
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
+### **Build**
 
 ```bash
 ng build
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+Os arquivos compilados vão para `dist/`.
 
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+### **Testes**
 
 ```bash
 ng test
 ```
 
-## Running end-to-end tests
+### **Próximos passos**
 
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- Consumir os endpoints de teste (`/testes/voo`, `/testes/video`, `/testes/voo-video`)
+- Tela de Detecção (vídeo + telemetria + ações de voo)
