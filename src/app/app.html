@@ -1,3 +1,10 @@
-<h1 class="text-4xl font-bold text-green-500 bg-black p-8">
-  Teste Tailwind
-</h1>
+<nav class="bg-black p-4 flex gap-4">
+  <a routerLink="/deteccao" routerLinkActive="!text-green-500" class="text-white font-bold">
+    Detecção
+  </a>
+  <a routerLink="/testes" routerLinkActive="!text-green-500" class="text-white font-bold">
+    Testes
+  </a>
+</nav>
+
+<router-outlet></router-outlet>
