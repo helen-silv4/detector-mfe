@@ -1,0 +1,46 @@
+<div
+  class="flex flex-col gap-4 rounded-xl border border-border-subtle bg-panel p-6 transition-all duration-300 hover:border-neon-500/70 hover:shadow-[0_0_24px_rgba(16,185,129,0.18)]"
+>
+  <span class="flex h-11 w-11 items-center justify-center rounded-lg border border-neon-500/30 bg-neon-500/10 text-neon-400">
+    <app-icon [name]="icon" class="h-5 w-5"></app-icon>
+  </span>
+
+  <div>
+    <h3 class="text-sm font-bold text-gray-100">{{ title }}</h3>
+    <p class="mt-1 text-xs leading-relaxed text-gray-500">{{ description }}</p>
+  </div>
+
+  <button
+    type="button"
+    (click)="onRun()"
+    [disabled]="state() !== 'idle'"
+    [class]="
+      state() === 'idle'
+        ? 'mt-1 flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-xs font-bold uppercase tracking-wide transition-all duration-300 border border-neon-500 text-neon-400 hover:bg-neon-500/10 hover:shadow-[0_0_16px_rgba(16,185,129,0.3)]'
+        : state() === 'running'
+          ? 'mt-1 flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-xs font-bold uppercase tracking-wide transition-all duration-300 cursor-not-allowed border border-border-subtle text-gray-500'
+          : 'mt-1 flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-xs font-bold uppercase tracking-wide transition-all duration-300 border border-neon-500 bg-neon-500/15 text-neon-400'
+    "
+  >
+    @switch (state()) {
+      @case ('idle') {
+        Executar
+      }
+      @case ('running') {
+        <span class="h-3 w-3 animate-spin rounded-full border-2 border-gray-600 border-t-neon-400"></span>
+        Executando...
+      }
+      @case ('done') {
+        <app-icon name="check" class="h-3.5 w-3.5"></app-icon>
+        Concluído
+      }
+    }
+  </button>
+
+  @if (logs.length > 0) {
+    <pre
+      class="max-h-40 overflow-auto rounded-lg border border-border-subtle bg-black/40 p-3 font-mono text-[11px] leading-relaxed text-neon-400"
+      >{{ logs.join('\n') }}</pre
+    >
+  }
+</div>

@@ -1,10 +1,66 @@
-<nav class="bg-black p-4 flex gap-4">
-  <a routerLink="/deteccao" routerLinkActive="!text-green-500" class="text-white font-bold">
-    Detecção
-  </a>
-  <a routerLink="/testes" routerLinkActive="!text-green-500" class="text-white font-bold">
-    Testes
-  </a>
-</nav>
+<div class="min-h-screen bg-base">
+  <header class="sticky top-0 z-30 border-b border-border-subtle bg-panel/90 backdrop-blur">
+    <div class="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center gap-2.5">
+          <span class="flex h-9 w-9 items-center justify-center rounded-lg border border-neon-500/40 bg-neon-500/10 text-neon-400">
+            <app-icon name="drone" class="h-5 w-5"></app-icon>
+          </span>
+          <div class="leading-tight">
+            <p class="text-sm font-bold tracking-wide text-gray-100">DRONE DETECTOR</p>
+            <p class="text-[11px] font-medium tracking-wider text-gray-500">PAINEL DE CONTROLE</p>
+          </div>
+        </div>
 
-<router-outlet></router-outlet>
+        <span
+          class="flex items-center gap-1.5 rounded-full border border-border-subtle bg-black/30 px-2.5 py-1 text-xs font-medium text-gray-400 sm:hidden"
+        >
+          <span
+            class="h-2 w-2 rounded-full"
+            [class]="
+              telemetryService.telemetry().connected
+                ? 'bg-neon-bright shadow-[0_0_6px_2px_rgba(0,255,0,0.6)]'
+                : 'bg-red-500'
+            "
+          ></span>
+          {{ telemetryService.telemetry().connected ? 'Online' : 'Offline' }}
+        </span>
+      </div>
+
+      <nav class="flex items-center gap-2 rounded-xl border border-border-subtle bg-black/20 p-1">
+        @for (tab of tabs; track tab.path) {
+          <a
+            [routerLink]="tab.path"
+            routerLinkActive
+            #rla="routerLinkActive"
+            [class]="
+              rla.isActive
+                ? 'rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-300 bg-neon-500 text-black shadow-[0_0_16px_rgba(16,185,129,0.5)]'
+                : 'rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-300 text-gray-400 hover:bg-white/5 hover:text-neon-400'
+            "
+          >
+            {{ tab.label }}
+          </a>
+        }
+      </nav>
+
+      <span
+        class="hidden items-center gap-1.5 rounded-full border border-border-subtle bg-black/30 px-3 py-1.5 text-xs font-medium text-gray-400 sm:flex"
+      >
+        <span
+          class="h-2 w-2 rounded-full"
+          [class]="
+            telemetryService.telemetry().connected
+              ? 'bg-neon-bright shadow-[0_0_6px_2px_rgba(0,255,0,0.6)]'
+              : 'bg-red-500'
+          "
+        ></span>
+        {{ telemetryService.telemetry().connected ? 'Sistema Online' : 'Sistema Offline' }}
+      </span>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
+    <router-outlet></router-outlet>
+  </main>
+</div>
