@@ -105,27 +105,27 @@ será adicionada depois.
 
 ### ⚠️ **Erros comuns**
 
-> **"remote: error: GH013: Repository rule violations found"**
+**"remote: error: GH013: Repository rule violations found"**
 
-Você tentou dar push com um nome de branch fora do padrão, ou tentou dar
+> Você tentou dar push com um nome de branch fora do padrão, ou tentou dar
 push direto na `main`. Renomeie sua branch local (`git branch -m nome-certo`)
 e tente de novo.
 
-> **PR não aparece automaticamente depois do push**
+**PR não aparece automaticamente depois do push**
 
-Confira na aba **Actions** do GitHub se o workflow `ci-feature-develop.yml`
+> Confira na aba **Actions** do GitHub se o workflow `ci-feature-develop.yml`
 rodou e terminou com sucesso (ícone verde). Se falhou, o erro mais comum é
 falta de permissão — confira em `Settings → Actions → General → Workflow
 permissions` se está marcado "Read and write permissions" e "Allow GitHub
 Actions to create and approve pull requests".
 
-> **Botão de "Merge" aparece cinza/bloqueado**
+**Botão de "Merge" aparece cinza/bloqueado**
 
-Falta pelo menos 1 aprovação de outra pessoa no PR. Quem abriu o PR não pode
+> Falta pelo menos 1 aprovação de outra pessoa no PR. Quem abriu o PR não pode
 aprovar o próprio PR.
 
-> **"gh pr create" falhou dizendo que não há commits entre as branches**
+**"gh pr create" falhou dizendo que não há commits entre as branches**
 
-Normal quando não há nada novo em `develop` para levar pra `main` (ou nada
+>Normal quando não há nada novo em `develop` para levar pra `main` (ou nada
 novo na sua branch para levar pra `develop`). Não é um erro real, só significa
 que não havia PR o que abrir.
