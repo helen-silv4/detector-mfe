@@ -48,13 +48,10 @@ export class Deteccao implements OnInit {
 
   /** POST para iniciar missão e, no sucesso, conectar o vídeo */
   decolarEInspecionar() {
-    this.droneService.iniciarMissao().subscribe({
-      next: (res) => {
-        console.log('Missão iniciada com sucesso:', res);
+    this.droneService.executarTesteStream('/testes/voo-video', (log, status) => {
+      console.log(log);
+      if (status === 'sucesso') {
         this.conectarVideo();
-      },
-      error: (err) => {
-        console.error('Erro ao iniciar missão:', err);
       }
     });
   }

@@ -20,25 +20,31 @@ export class Testes {
 
   executarTesteVoo() {
     this.carregandoVoo.set(true);
-    this.drone.testeVoo().subscribe(resposta => {
-      this.logsVoo.set(resposta.logs);
-      this.carregandoVoo.set(false);
-    });
+    this.logsVoo.set([]);
+    this.drone
+      .executarTesteStream('/testes/voo', (log) => {
+        this.logsVoo.update(logs => [...logs, log]);
+      })
+      .finally(() => this.carregandoVoo.set(false));
   }
 
   executarTesteVideo() {
     this.carregandoVideo.set(true);
-    this.drone.testeVideo().subscribe(resposta => {
-      this.logsVideo.set(resposta.logs);
-      this.carregandoVideo.set(false);
-    });
+    this.logsVideo.set([]);
+    this.drone
+      .executarTesteStream('/testes/video', (log) => {
+        this.logsVideo.update(logs => [...logs, log]);
+      })
+      .finally(() => this.carregandoVideo.set(false));
   }
 
   executarTesteVooVideo() {
     this.carregandoVooVideo.set(true);
-    this.drone.testeVooVideo().subscribe(resposta => {
-      this.logsVooVideo.set(resposta.logs);
-      this.carregandoVooVideo.set(false);
-    });
+    this.logsVooVideo.set([]);
+    this.drone
+      .executarTesteStream('/testes/voo-video', (log) => {
+        this.logsVooVideo.update(logs => [...logs, log]);
+      })
+      .finally(() => this.carregandoVooVideo.set(false));
   }
 }
