@@ -1,4 +1,5 @@
 import { Component, HostListener, inject, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { DroneService } from '../../core/drone';
 
 const STREAM_BASE_URL = 'http://localhost:8000/deteccao/stream';
@@ -8,7 +9,7 @@ const TECLAS_VALIDAS = new Set(['w', 's', 'a', 'd', 'i', 'k', 'j', 'l']);
 
 @Component({
   selector: 'app-deteccao',
-  imports: [],
+  imports: [FormsModule],
   templateUrl: './deteccao.html',
   styleUrl: './deteccao.scss'
 })
@@ -21,6 +22,13 @@ export class Deteccao implements OnInit {
   // ─── Controle manual via teclado ────────────────────────────────
   velocidade = 50;
   controles = { lr: 0, fb: 0, ud: 0, yv: 0 };
+
+  // ─── Formulário de registro de infração ─────────────────────────
+  infracaoLat = -23.5222;
+  infracaoLon = -46.6736;
+  infracaoConfianca = 0.85;
+  salvandoInfracao = false;
+  infracaoSalva = false;
 
   ngOnInit() {
     this.conectarVideo();
@@ -67,6 +75,34 @@ export class Deteccao implements OnInit {
       },
       error: (err) => {
         console.error('Erro no pouso de emergência:', err);
+      }
+    });
+  }
+
+  // ─── Registro manual de infração ─────────────────────────────────
+
+  /** Captura os dados do formulário e registra a infração no backend */
+  capturarInfracao() {
+    this.salvandoInfracao = true;
+    this.infracaoSalva = false;
+
+    const dados = {
+      lat: this.infracaoLat,
+      lon: this.infracaoLon,
+      confianca: this.infracaoConfianca,
+      img_path: `capturas/drone_frame_${Date.now()}.jpg`
+    };
+
+    this.droneService.registrarDeteccao(1, dados).subscribe({
+      next: (res) => {
+        console.log('Infração registrada com sucesso:', res);
+        this.salvandoInfracao = false;
+        this.infracaoSalva = true;
+        setTimeout(() => this.infracaoSalva = false, 3000);
+      },
+      error: (err) => {
+        console.error('Erro ao registrar infração:', err);
+        this.salvandoInfracao = false;
       }
     });
   }

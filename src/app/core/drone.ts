@@ -57,6 +57,19 @@ export class DroneService {
       { lr, fb, ud, yv }
     );
   }
+
+  // ─── Registro de infrações ambientais ─────────────────────────────
+
+  /** POST /deteccao/registrar/{id_voo} — Registra uma detecção de infração */
+  registrarDeteccao(
+    id_voo: number,
+    dados: { lat: number; lon: number; confianca: number; img_path: string }
+  ) {
+    return this.http.post<{ status: string; id?: number }>(
+      `${API_URL}/deteccao/registrar/${id_voo}`,
+      dados
+    );
+  }
 }
 
 // Alias para compatibilidade com imports existentes (testes.ts, drone.spec.ts)
