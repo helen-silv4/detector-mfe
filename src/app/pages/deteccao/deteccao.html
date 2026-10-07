@@ -38,12 +38,54 @@
         <div class="bg-[#1E1E1E] rounded-xl border border-gray-700 p-5 flex flex-col justify-center">
             <h3 class="text-lg font-bold text-white mb-6 border-b border-gray-700 pb-2">Comandos da Missão</h3>
 
+            <!-- Coordenadas de Decolagem (trava de 8 casas decimais) -->
+            <div class="mb-4 space-y-3">
+                <div>
+                    <label for="decolagem-lat" class="text-xs text-gray-400 block mb-1">Latitude de Decolagem</label>
+                    <input id="decolagem-lat" type="text" inputmode="decimal" autocomplete="off"
+                        [(ngModel)]="decolagemLat" placeholder="-23.52223000"
+                        [attr.aria-invalid]="!latDecolagemValida"
+                        class="w-full px-3 py-2 bg-[#121212] border rounded-md text-white text-sm font-mono focus:outline-none"
+                        [class.border-red-500]="!latDecolagemValida"
+                        [class.border-emerald-500]="latDecolagemValida" />
+                    @if (!latDecolagemValida) {
+                        <p class="mt-1 text-xs text-red-400">⚠ A latitude deve ter exatamente 8 casas decimais após o ponto (ex: -23.52223000).</p>
+                    } @else {
+                        <p class="mt-1 text-xs text-[#10B981]">✓ Latitude válida</p>
+                    }
+                </div>
+                <div>
+                    <label for="decolagem-lon" class="text-xs text-gray-400 block mb-1">Longitude de Decolagem</label>
+                    <input id="decolagem-lon" type="text" inputmode="decimal" autocomplete="off"
+                        [(ngModel)]="decolagemLon" placeholder="-46.67362000"
+                        [attr.aria-invalid]="!lonDecolagemValida"
+                        class="w-full px-3 py-2 bg-[#121212] border rounded-md text-white text-sm font-mono focus:outline-none"
+                        [class.border-red-500]="!lonDecolagemValida"
+                        [class.border-emerald-500]="lonDecolagemValida" />
+                    @if (!lonDecolagemValida) {
+                        <p class="mt-1 text-xs text-red-400">⚠ A longitude deve ter exatamente 8 casas decimais após o ponto (ex: -46.67362000).</p>
+                    } @else {
+                        <p class="mt-1 text-xs text-[#10B981]">✓ Longitude válida</p>
+                    }
+                </div>
+            </div>
+
             <button
                 type="button"
                 (click)="decolarEInspecionar()"
-                class="w-full py-4 mb-4 bg-[#10B981] hover:bg-[#059669] text-black font-bold rounded-lg transition-all transform hover:scale-105 active:scale-95 shadow-md shadow-[#10B981]/20 cursor-pointer">
-                DECOLAR E INSPECIONAR
+                [disabled]="!coordenadasDecolagemValidas || decolando"
+                [title]="coordenadasDecolagemValidas ? '' : 'Informe latitude e longitude com exatamente 8 casas decimais'"
+                class="w-full py-4 mb-4 bg-[#10B981] hover:bg-[#059669] text-black font-bold rounded-lg transition-all transform hover:scale-105 active:scale-95 shadow-md shadow-[#10B981]/20 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:bg-[#10B981]">
+                @if (decolando) {
+                    DECOLANDO...
+                } @else {
+                    DECOLAR E INSPECIONAR
+                }
             </button>
+
+            @if (erroDecolagem) {
+                <p class="-mt-2 mb-4 text-xs text-red-400 text-center" role="alert">{{ erroDecolagem }}</p>
+            }
 
             <button
                 type="button"
@@ -52,36 +94,18 @@
                 POUSO DE EMERGÊNCIA
             </button>
 
-            <!-- Registro Manual de Infração -->
+            <!-- Registro de Infração -->
             <div class="mt-6 pt-4 border-t border-gray-700">
                 <h3 class="text-sm font-bold text-[#10B981] mb-4 flex items-center gap-2">
                     <span class="w-2 h-2 rounded-full bg-amber-400"></span>
                     Registro de Infração
                 </h3>
 
-                <div class="space-y-3">
-                    <div>
-                        <label class="text-xs text-gray-400 block mb-1">Latitude</label>
-                        <input type="number" [(ngModel)]="infracaoLat" step="0.0001"
-                            class="w-full px-3 py-2 bg-[#121212] border border-gray-600 rounded-md text-white text-sm focus:border-[#10B981] focus:outline-none" />
-                    </div>
-                    <div>
-                        <label class="text-xs text-gray-400 block mb-1">Longitude</label>
-                        <input type="number" [(ngModel)]="infracaoLon" step="0.0001"
-                            class="w-full px-3 py-2 bg-[#121212] border border-gray-600 rounded-md text-white text-sm focus:border-[#10B981] focus:outline-none" />
-                    </div>
-                    <div>
-                        <label class="text-xs text-gray-400 block mb-1">Confiança (0-1)</label>
-                        <input type="number" [(ngModel)]="infracaoConfianca" step="0.01" min="0" max="1"
-                            class="w-full px-3 py-2 bg-[#121212] border border-gray-600 rounded-md text-white text-sm focus:border-[#10B981] focus:outline-none" />
-                    </div>
-                </div>
-
                 <button
                     type="button"
                     (click)="capturarInfracao()"
                     [disabled]="salvandoInfracao"
-                    class="w-full mt-4 py-3 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed text-black font-bold rounded-lg transition-all active:scale-95 cursor-pointer">
+                    class="w-full mt-2 py-3 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed text-black font-bold rounded-lg transition-all active:scale-95 cursor-pointer">
                     @if (salvandoInfracao) {
                         SALVANDO...
                     } @else {

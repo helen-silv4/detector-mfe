@@ -34,11 +34,15 @@ export class DroneService {
 
   // ─── Métodos novos (usados pela página de detecção) ─────────────
 
-  /** POST /testes/voo-video — Inicia decolagem + câmera */
-  iniciarMissao() {
+  /**
+   * POST /missao/decolar — Inicia decolagem + câmera.
+   * As coordenadas são enviadas como string para preservar os zeros à direita
+   * (o backend exige exatamente 8 casas decimais e responde 400 caso contrário).
+   */
+  iniciarMissao(latitude: string, longitude: string) {
     return this.http.post<{ status: string; logs: string[] }>(
-      `${API_URL}/testes/voo-video`,
-      {}
+      `${API_URL}/missao/decolar`,
+      { latitude, longitude }
     );
   }
 
@@ -60,14 +64,11 @@ export class DroneService {
 
   // ─── Registro de infrações ambientais ─────────────────────────────
 
-  /** POST /deteccao/registrar/{id_voo} — Registra uma detecção de infração */
-  registrarDeteccao(
-    id_voo: number,
-    dados: { lat: number; lon: number; confianca: number; img_path: string }
-  ) {
-    return this.http.post<{ status: string; id?: number }>(
+  /** POST /deteccao/registrar/{id_voo} — Registra uma detecção de infração com dados automáticos do backend */
+  registrarDeteccao(id_voo: number = 1) {
+    return this.http.post<{ status: string; id_deteccao?: number }>(
       `${API_URL}/deteccao/registrar/${id_voo}`,
-      dados
+      {}
     );
   }
 }
