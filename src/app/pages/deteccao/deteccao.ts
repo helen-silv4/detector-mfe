@@ -1,4 +1,5 @@
 import { Component, HostListener, inject, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { DroneService } from '../../core/drone';
 
 const STREAM_BASE_URL = 'http://localhost:8000/deteccao/stream';
@@ -6,9 +7,12 @@ const STREAM_BASE_URL = 'http://localhost:8000/deteccao/stream';
 /** Teclas mapeadas para controle RC */
 const TECLAS_VALIDAS = new Set(['w', 's', 'a', 'd', 'i', 'k', 'j', 'l']);
 
+/** Trava de decolagem: exatamente 8 casas decimais após o ponto (mesma regex do backend) */
+export const REGEX_COORDENADA_8_CASAS = /^-?\d+\.\d{8}$/;
+
 @Component({
   selector: 'app-deteccao',
-  imports: [],
+  imports: [FormsModule],
   templateUrl: './deteccao.html',
   styleUrl: './deteccao.scss'
 })
@@ -22,7 +26,51 @@ export class Deteccao implements OnInit {
   velocidade = 50;
   controles = { lr: 0, fb: 0, ud: 0, yv: 0 };
 
+  // ─── Estado do registro de infração ─────────────────────────────
+  salvandoInfracao = false;
+  infracaoSalva = false;
+
+  // ─── Coordenadas de decolagem (trava de 8 casas decimais) ───────
+  // Mantidas como string e persistidas no localStorage para sobreviver a F5
+  private _decolagemLat = '';
+  private _decolagemLon = '';
+
+  get decolagemLat(): string {
+    return this._decolagemLat;
+  }
+  set decolagemLat(val: string) {
+    this._decolagemLat = val ?? '';
+    localStorage.setItem('decolagemLat', this._decolagemLat);
+  }
+
+  get decolagemLon(): string {
+    return this._decolagemLon;
+  }
+  set decolagemLon(val: string) {
+    this._decolagemLon = val ?? '';
+    localStorage.setItem('decolagemLon', this._decolagemLon);
+  }
+
+  decolando = false;
+  erroDecolagem = '';
+
+  get latDecolagemValida(): boolean {
+    return REGEX_COORDENADA_8_CASAS.test(this.decolagemLat);
+  }
+
+  get lonDecolagemValida(): boolean {
+    return REGEX_COORDENADA_8_CASAS.test(this.decolagemLon);
+  }
+
+  get coordenadasDecolagemValidas(): boolean {
+    return this.latDecolagemValida && this.lonDecolagemValida;
+  }
+
   ngOnInit() {
+    // Recupera coordenadas salvas no localStorage no carregamento da página
+    this._decolagemLat = localStorage.getItem('decolagemLat') || '';
+    this._decolagemLon = localStorage.getItem('decolagemLon') || '';
+
     this.conectarVideo();
   }
 
@@ -46,12 +94,27 @@ export class Deteccao implements OnInit {
 
   // ─── Comandos de missão ─────────────────────────────────────────
 
-  /** POST para iniciar missão e, no sucesso, conectar o vídeo */
+  /** POST para iniciar missão (somente com coordenadas válidas) e, no sucesso, conectar o vídeo */
   decolarEInspecionar() {
-    this.droneService.executarTesteStream('/testes/voo-video', (log, status) => {
-      console.log(log);
-      if (status === 'sucesso') {
+    // Defesa extra além do [disabled] do botão
+    if (!this.coordenadasDecolagemValidas || this.decolando) return;
+
+    this.decolando = true;
+    this.erroDecolagem = '';
+
+    this.droneService.iniciarMissao(this.decolagemLat, this.decolagemLon).subscribe({
+      next: (res) => {
+        console.log('Missão iniciada com sucesso:', res);
+        this.decolando = false;
         this.conectarVideo();
+      },
+      error: (err) => {
+        console.error('Erro ao iniciar missão:', err);
+        this.decolando = false;
+        this.erroDecolagem =
+          err?.status === 400 && typeof err.error?.detail === 'string'
+            ? err.error.detail
+            : 'Falha ao iniciar a missão. Verifique a conexão com a API.';
       }
     });
   }
@@ -64,6 +127,27 @@ export class Deteccao implements OnInit {
       },
       error: (err) => {
         console.error('Erro no pouso de emergência:', err);
+      }
+    });
+  }
+
+  // ─── Registro de infração ───────────────────────────────────────
+
+  /** Dispara a captura da infração no backend (extrai imagem e telemetria da IA automaticamente) */
+  capturarInfracao() {
+    this.salvandoInfracao = true;
+    this.infracaoSalva = false;
+
+    this.droneService.registrarDeteccao(1).subscribe({
+      next: (res) => {
+        console.log('Infração registrada com sucesso:', res);
+        this.salvandoInfracao = false;
+        this.infracaoSalva = true;
+        setTimeout(() => this.infracaoSalva = false, 3000);
+      },
+      error: (err) => {
+        console.error('Erro ao registrar infração:', err);
+        this.salvandoInfracao = false;
       }
     });
   }
