@@ -1,37 +1,128 @@
-<div class="p-8 grid grid-cols-3 gap-4">
-  <div class="border border-green-500 rounded-lg p-4">
-    <h2 class="font-bold mb-2">Teste de Voo</h2>
-    <button
-      (click)="executarTesteVoo()"
-      [disabled]="carregandoVoo()"
-      class="bg-green-500 text-black px-4 py-2 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-    >
-      {{ carregandoVoo() ? 'Executando...' : 'Executar' }}
-    </button>
-    <pre class="bg-black text-green-400 text-xs p-2 mt-2 rounded">{{ logsVoo().join('\n') }}</pre>
-  </div>
+<div class="bg-[#121212] min-h-screen p-6 text-white">
+  <!-- Cabeçalho -->
+  <header class="mb-6">
+    <h1 class="text-2xl font-bold">Testes do Drone</h1>
+    <p class="text-sm text-gray-400">Valide voo, câmera e stream de vídeo antes da missão.</p>
+  </header>
 
-  <div class="border border-green-500 rounded-lg p-4">
-    <h2 class="font-bold mb-2">Teste de Vídeo</h2>
-    <button
-      (click)="executarTesteVideo()"
-      [disabled]="carregandoVideo()"
-      class="bg-green-500 text-black px-4 py-2 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-    >
-      {{ carregandoVideo() ? 'Executando...' : 'Executar' }}
-    </button>
-    <pre class="bg-black text-green-400 text-xs p-2 mt-2 rounded">{{ logsVideo().join('\n') }}</pre>
-  </div>
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- ═══ Colunas 1 e 2: Monitor de vídeo + logs ═══ -->
+    <section class="lg:col-span-2 flex flex-col gap-6">
+      <div class="bg-[#1E1E1E] rounded-xl border border-gray-700 overflow-hidden">
+        <div class="flex items-center justify-between px-5 py-3 border-b border-gray-700">
+          <h2 class="font-bold">Monitor de Vídeo</h2>
+          @if (exibirVideo && !streamError) {
+            <span class="flex items-center gap-2 text-xs font-bold text-[#10B981]">
+              <span class="w-2 h-2 rounded-full bg-[#10B981] animate-pulse"></span>
+              AO VIVO
+            </span>
+          } @else if (exibirVideo) {
+            <span class="flex items-center gap-2 text-xs font-bold text-yellow-400">
+              <span class="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></span>
+              SEM SINAL
+            </span>
+          } @else {
+            <span class="flex items-center gap-2 text-xs font-bold text-gray-500">
+              <span class="w-2 h-2 rounded-full bg-gray-500"></span>
+              OFFLINE
+            </span>
+          }
+        </div>
 
-  <div class="border border-green-500 rounded-lg p-4">
-    <h2 class="font-bold mb-2">Voo + Vídeo</h2>
-    <button
-      (click)="executarTesteVooVideo()"
-      [disabled]="carregandoVooVideo()"
-      class="bg-green-500 text-black px-4 py-2 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-    >
-      {{ carregandoVooVideo() ? 'Executando...' : 'Executar' }}
-    </button>
-    <pre class="bg-black text-green-400 text-xs p-2 mt-2 rounded">{{ logsVooVideo().join('\n') }}</pre>
+        <div class="relative w-full aspect-video bg-black">
+          @if (exibirVideo) {
+            @if (!streamError) {
+              <img
+                [src]="streamUrl"
+                (error)="onStreamError()"
+                alt="Stream de vídeo do drone"
+                class="w-full h-full object-contain aspect-video bg-black"
+              />
+            } @else {
+              <div class="absolute inset-0 flex flex-col items-center justify-center gap-4 text-gray-400">
+                <svg class="w-12 h-12 animate-spin text-[#10B981]" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                </svg>
+                <p class="text-sm font-semibold animate-pulse">Aguardando sinal do drone...</p>
+              </div>
+            }
+          } @else {
+            <div class="absolute inset-0 flex flex-col items-center justify-center gap-3 text-gray-500">
+              <svg class="w-12 h-12" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M12 18.75H4.5a2.25 2.25 0 01-2.25-2.25V9m12.841 9.091L16.5 19.5m-1.409-1.409c.407-.407.659-.97.659-1.591v-9a2.25 2.25 0 00-2.25-2.25h-9c-.621 0-1.184.252-1.591.659m12.182 12.182L2.909 5.909M1.5 4.5l1.409 1.409" />
+              </svg>
+              <p class="text-sm font-semibold">Câmera Desativada</p>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Logs -->
+      <div class="bg-[#1E1E1E] rounded-xl border border-gray-700 p-5">
+        <h2 class="font-bold mb-4">Logs dos Testes</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <h3 class="text-xs font-bold uppercase tracking-wide text-gray-400 mb-2">Voo</h3>
+            <pre class="bg-black text-[#10B981] text-xs p-3 rounded-lg h-40 overflow-auto whitespace-pre-wrap border border-gray-800">{{ logsVoo().length ? logsVoo().join('\n') : 'Nenhum log.' }}</pre>
+          </div>
+          <div>
+            <h3 class="text-xs font-bold uppercase tracking-wide text-gray-400 mb-2">Vídeo</h3>
+            <pre class="bg-black text-[#10B981] text-xs p-3 rounded-lg h-40 overflow-auto whitespace-pre-wrap border border-gray-800">{{ logsVideo().length ? logsVideo().join('\n') : 'Nenhum log.' }}</pre>
+          </div>
+          <div>
+            <h3 class="text-xs font-bold uppercase tracking-wide text-gray-400 mb-2">Voo + Vídeo</h3>
+            <pre class="bg-black text-[#10B981] text-xs p-3 rounded-lg h-40 overflow-auto whitespace-pre-wrap border border-gray-800">{{ logsVooVideo().length ? logsVooVideo().join('\n') : 'Nenhum log.' }}</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ Coluna 3: Painel de controle ═══ -->
+    <aside class="bg-[#1E1E1E] rounded-xl border border-gray-700 p-5 flex flex-col gap-4 h-fit">
+      <h2 class="font-bold">Painel de Controle</h2>
+
+      <button
+        (click)="executarTesteVoo()"
+        [disabled]="carregandoVoo()"
+        class="w-full py-3 rounded-lg font-bold bg-[#10B981] hover:bg-[#059669] text-black transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
+      >
+        {{ carregandoVoo() ? 'Executando...' : 'Testar Voo' }}
+      </button>
+
+      <button
+        (click)="executarTesteVideo()"
+        [disabled]="carregandoVideo()"
+        class="w-full py-3 rounded-lg font-bold bg-[#10B981] hover:bg-[#059669] text-black transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
+      >
+        {{ carregandoVideo() ? 'Executando...' : 'Testar Vídeo' }}
+      </button>
+
+      <button
+        (click)="executarTesteVooVideo()"
+        [disabled]="carregandoVooVideo()"
+        class="w-full py-3 rounded-lg font-bold bg-[#10B981] hover:bg-[#059669] text-black transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
+      >
+        {{ carregandoVooVideo() ? 'Executando...' : 'Testar Voo + Vídeo' }}
+      </button>
+
+      <button
+        (click)="pararVideo()"
+        [disabled]="!exibirVideo"
+        class="w-full py-3 rounded-lg font-bold border border-gray-600 text-gray-200 hover:bg-white/5 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100"
+      >
+        Parar Vídeo
+      </button>
+
+      <div class="border-t border-gray-700 pt-4">
+        <button
+          (click)="pousoEmergencia()"
+          class="w-full py-3 rounded-lg font-bold border border-red-500 text-red-500 hover:bg-red-500/10 transition-all active:scale-95"
+        >
+          Pouso de Emergência
+        </button>
+      </div>
+    </aside>
   </div>
 </div>
