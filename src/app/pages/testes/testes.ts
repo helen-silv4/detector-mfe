@@ -1,5 +1,7 @@
-import { Component, signal } from '@angular/core';
+import { Component, OnDestroy, signal } from '@angular/core';
 import { Drone } from '../../core/drone';
+
+const STREAM_BASE_URL = 'http://localhost:8000/deteccao/stream';
 
 @Component({
   selector: 'app-testes',
@@ -7,7 +9,7 @@ import { Drone } from '../../core/drone';
   templateUrl: './testes.html',
   styleUrl: './testes.scss'
 })
-export class Testes {
+export class Testes implements OnDestroy {
   logsVoo = signal<string[]>([]);
   logsVideo = signal<string[]>([]);
   logsVooVideo = signal<string[]>([]);
@@ -16,35 +18,42 @@ export class Testes {
   carregandoVideo = signal(false);
   carregandoVooVideo = signal(false);
 
-  constructor(private drone: Drone) {}
+  // ─── Monitor de vídeo ───────────────────────────────────────────
+  streamUrl = STREAM_BASE_URL;
+  exibirVideo = false;
+  streamError = false;
+
+  private reconexaoTimer: ReturnType<typeof setTimeout> | null = null;
+
+  constructor(private drone: Drone) { }
+
+  ngOnDestroy() {
+    this.limparReconexao();
+  }
+
+  // ─── Testes ─────────────────────────────────────────────────────
 
   executarTesteVoo() {
     this.carregandoVoo.set(true);
-    this.logsVoo.set([]);
-    this.drone
-      .executarTesteStream('/testes/voo', (log) => {
-        this.logsVoo.update(logs => [...logs, log]);
-      })
-      .finally(() => this.carregandoVoo.set(false));
+    this.drone.testeVoo().subscribe(resposta => {
+      this.logsVoo.set(resposta.logs);
+      this.carregandoVoo.set(false);
+    });
   }
 
   executarTesteVideo() {
     this.carregandoVideo.set(true);
-    this.logsVideo.set([]);
-    this.drone
-      .executarTesteStream('/testes/video', (log) => {
-        this.logsVideo.update(logs => [...logs, log]);
-      })
-      .finally(() => this.carregandoVideo.set(false));
+    this.drone.testeVideo().subscribe(resposta => {
+      this.logsVideo.set(resposta.logs);
+      this.carregandoVideo.set(false);
+    });
   }
 
   executarTesteVooVideo() {
     this.carregandoVooVideo.set(true);
-    this.logsVooVideo.set([]);
-    this.drone
-      .executarTesteStream('/testes/voo-video', (log) => {
-        this.logsVooVideo.update(logs => [...logs, log]);
-      })
-      .finally(() => this.carregandoVooVideo.set(false));
+    this.drone.testeVooVideo().subscribe(resposta => {
+      this.logsVooVideo.set(resposta.logs);
+      this.carregandoVooVideo.set(false);
+    });
   }
 }
