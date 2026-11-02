@@ -1,0 +1,106 @@
+<div class="min-h-screen bg-[#121212] p-6 text-white font-sans">
+    <header class="mb-6 border-b border-gray-800 pb-4">
+        <h1 class="text-3xl font-bold text-[#10B981]">Dashboard Geoespacial - Sistema de Suporte à Decisão</h1>
+        <p class="text-gray-400 text-sm mt-1">Visualização de infrações ambientais registradas</p>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Placeholder do Mapa Interativo (Leaflet.js) -->
+        <div class="bg-[#1E1E1E] rounded-xl border border-gray-700 overflow-hidden shadow-lg shadow-[#10B981]/10">
+            <div class="p-3 bg-gray-900 border-b border-gray-700 flex justify-between items-center">
+                <h2 class="text-sm font-semibold flex items-center gap-2 text-gray-300">
+                    <span class="w-2.5 h-2.5 rounded-full bg-blue-400"></span>
+                    Mapa de Ocorrências
+                </h2>
+            </div>
+
+            <div class="p-3 bg-[#0a0a0a]">
+                <div id="map" class="w-full h-96 rounded-xl border border-gray-700 z-10 relative"></div>
+            </div>
+        </div>
+
+        <!-- Tabela de Registros de Lixo -->
+        <div class="bg-[#1E1E1E] rounded-xl border border-gray-700 overflow-hidden shadow-lg shadow-[#10B981]/10">
+            <div class="p-3 bg-gray-900 border-b border-gray-700 flex justify-between items-center">
+                <h2 class="text-sm font-semibold flex items-center gap-2 text-gray-300">
+                    <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+                    Registros de Lixo Detectado
+                </h2>
+                <button
+                    type="button"
+                    (click)="atualizarDados()"
+                    class="text-xs px-4 py-1.5 border border-[#10B981] rounded-md bg-[#10B981]/10 hover:bg-[#10B981]/25 transition-colors text-[#10B981] font-semibold cursor-pointer flex items-center gap-1.5">
+                    ↻ Atualizar Dados
+                </button>
+            </div>
+
+            <div class="overflow-x-auto">
+                @if (carregando) {
+                    <div class="p-8 text-center text-gray-500">
+                        <p class="animate-pulse">Carregando registros...</p>
+                    </div>
+                } @else if (erro) {
+                    <div class="p-8 text-center text-red-400">
+                        <p>Erro ao carregar registros. Verifique se a API está ativa.</p>
+                        <button
+                            type="button"
+                            (click)="atualizarDados()"
+                            class="mt-3 text-sm px-4 py-2 border border-red-500 rounded-md hover:bg-red-500/10 transition-colors cursor-pointer">
+                            Tentar novamente
+                        </button>
+                    </div>
+                } @else if (!registros || registros.length === 0) {
+                    <div class="p-8 text-center text-gray-500">
+                        <p>Nenhuma infração registrada ainda.</p>
+                    </div>
+                } @else {
+                    <table class="w-full text-sm text-left">
+                        <thead class="text-xs text-gray-400 uppercase bg-gray-900/50 border-b border-gray-700">
+                            <tr>
+                                <th class="px-4 py-3">ID</th>
+                                <th class="px-4 py-3">Voo</th>
+                                <th class="px-4 py-3">Latitude</th>
+                                <th class="px-4 py-3">Longitude</th>
+                                <th class="px-4 py-3">Confiança</th>
+                                <th class="px-4 py-3">Imagem</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (reg of registros; track reg.id_deteccao) {
+                                <tr class="border-b border-gray-800 hover:bg-gray-800/50 transition-colors">
+                                    <td class="px-4 py-3 font-mono text-[#10B981]">{{ reg.id_deteccao }}</td>
+                                    <td class="px-4 py-3">{{ reg.id_voo }}</td>
+                                    <td class="px-4 py-3 font-mono">{{ reg.latitude }}</td>
+                                    <td class="px-4 py-3 font-mono">{{ reg.longitude }}</td>
+                                    <td class="px-4 py-3">
+                                        <span class="px-2 py-0.5 rounded-full text-xs font-semibold"
+                                            [class]="reg.confianca_ia >= 0.8 ? 'bg-green-500/20 text-green-400' : reg.confianca_ia >= 0.5 ? 'bg-amber-500/20 text-amber-400' : 'bg-red-500/20 text-red-400'">
+                                            {{ reg.confianca_ia | percent }}
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        @if (!imagensComErro.has(reg.id_deteccao)) {
+                                            <a [href]="urlImagem(reg.caminho_imagem)" target="_blank" rel="noopener"
+                                                [title]="reg.caminho_imagem" class="block w-16 h-16 shrink-0">
+                                                <img [src]="urlImagem(reg.caminho_imagem)"
+                                                    [alt]="'Infração #' + reg.id_deteccao"
+                                                    loading="lazy"
+                                                    (error)="onImagemErro(reg.id_deteccao)"
+                                                    class="w-16 h-16 object-cover rounded border border-gray-700 hover:border-[#10B981] transition-colors" />
+                                            </a>
+                                        } @else {
+                                            <div class="w-16 h-16 rounded border border-dashed border-gray-700 bg-[#0a0a0a] flex items-center justify-center text-[10px] text-gray-500 text-center leading-tight"
+                                                [title]="reg.caminho_imagem">
+                                                Sem<br />imagem
+                                            </div>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+    </div>
+</div>
