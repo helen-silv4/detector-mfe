@@ -31,6 +31,25 @@ export class Testes implements OnDestroy {
     this.limparReconexao();
   }
 
+  onStreamError() {
+    this.streamError = true;
+  }
+
+  pararVideo() {
+    this.exibirVideo = false;
+  }
+
+  pousoEmergencia() {
+    this.drone.pousoEmergencia().subscribe();
+  }
+
+  limparReconexao() {
+    if (this.reconexaoTimer) {
+      clearTimeout(this.reconexaoTimer);
+      this.reconexaoTimer = null;
+    }
+  }
+
   // ─── Testes ─────────────────────────────────────────────────────
 
   executarTesteVoo() {
