@@ -11,12 +11,12 @@
       <div class="bg-[#1E1E1E] rounded-xl border border-gray-700 overflow-hidden">
         <div class="flex items-center justify-between px-5 py-3 border-b border-gray-700">
           <h2 class="font-bold">Monitor de Vídeo</h2>
-          @if (exibirVideo && !streamError) {
+          @if (exibirVideo() && !streamError()) {
             <span class="flex items-center gap-2 text-xs font-bold text-[#10B981]">
               <span class="w-2 h-2 rounded-full bg-[#10B981] animate-pulse"></span>
               AO VIVO
             </span>
-          } @else if (exibirVideo) {
+          } @else if (exibirVideo()) {
             <span class="flex items-center gap-2 text-xs font-bold text-yellow-400">
               <span class="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></span>
               SEM SINAL
@@ -30,10 +30,10 @@
         </div>
 
         <div class="relative w-full aspect-video bg-black">
-          @if (exibirVideo) {
-            @if (!streamError) {
+          @if (exibirVideo()) {
+            @if (!streamError() && streamUrl()) {
               <img
-                [src]="streamUrl"
+                [src]="streamUrl()"
                 (error)="onStreamError()"
                 alt="Stream de vídeo do drone"
                 class="w-full h-full object-contain aspect-video bg-black"
@@ -59,21 +59,34 @@
         </div>
       </div>
 
-      <!-- Logs -->
+      <!-- Logs (tempo real) -->
       <div class="bg-[#1E1E1E] rounded-xl border border-gray-700 p-5">
-        <h2 class="font-bold mb-4">Logs dos Testes</h2>
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-bold">Logs dos Testes</h2>
+          @if (logsDesconectados()) {
+            <span class="flex items-center gap-2 text-xs font-bold text-yellow-400">
+              <span class="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></span>
+              Logs em tempo real desconectados — reconectando à API...
+            </span>
+          } @else {
+            <span class="flex items-center gap-2 text-xs font-bold text-[#10B981]">
+              <span class="w-2 h-2 rounded-full bg-[#10B981]"></span>
+              Tempo real
+            </span>
+          }
+        </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <h3 class="text-xs font-bold uppercase tracking-wide text-gray-400 mb-2">Voo</h3>
-            <pre class="bg-black text-[#10B981] text-xs p-3 rounded-lg h-40 overflow-auto whitespace-pre-wrap border border-gray-800">{{ logsVoo().length ? logsVoo().join('\n') : 'Nenhum log.' }}</pre>
+            <pre #painelVoo class="bg-black text-xs p-3 rounded-lg h-40 overflow-auto whitespace-pre-wrap border border-gray-800">@for (linha of logsVoo(); track $index) {<div [class]="classeLog(linha)">{{ linha }}</div>} @empty {<span class="text-gray-500">Nenhum log.</span>}</pre>
           </div>
           <div>
             <h3 class="text-xs font-bold uppercase tracking-wide text-gray-400 mb-2">Vídeo</h3>
-            <pre class="bg-black text-[#10B981] text-xs p-3 rounded-lg h-40 overflow-auto whitespace-pre-wrap border border-gray-800">{{ logsVideo().length ? logsVideo().join('\n') : 'Nenhum log.' }}</pre>
+            <pre #painelVideo class="bg-black text-xs p-3 rounded-lg h-40 overflow-auto whitespace-pre-wrap border border-gray-800">@for (linha of logsVideo(); track $index) {<div [class]="classeLog(linha)">{{ linha }}</div>} @empty {<span class="text-gray-500">Nenhum log.</span>}</pre>
           </div>
           <div>
             <h3 class="text-xs font-bold uppercase tracking-wide text-gray-400 mb-2">Voo + Vídeo</h3>
-            <pre class="bg-black text-[#10B981] text-xs p-3 rounded-lg h-40 overflow-auto whitespace-pre-wrap border border-gray-800">{{ logsVooVideo().length ? logsVooVideo().join('\n') : 'Nenhum log.' }}</pre>
+            <pre #painelVooVideo class="bg-black text-xs p-3 rounded-lg h-40 overflow-auto whitespace-pre-wrap border border-gray-800">@for (linha of logsVooVideo(); track $index) {<div [class]="classeLog(linha)">{{ linha }}</div>} @empty {<span class="text-gray-500">Nenhum log.</span>}</pre>
           </div>
         </div>
       </div>
@@ -85,7 +98,7 @@
 
       <button
         (click)="executarTesteVoo()"
-        [disabled]="carregandoVoo()"
+        [disabled]="carregandoVoo() || carregandoVooVideo()"
         class="w-full py-3 rounded-lg font-bold bg-[#10B981] hover:bg-[#059669] text-black transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
       >
         {{ carregandoVoo() ? 'Executando...' : 'Testar Voo' }}
@@ -101,7 +114,7 @@
 
       <button
         (click)="executarTesteVooVideo()"
-        [disabled]="carregandoVooVideo()"
+        [disabled]="carregandoVoo() || carregandoVooVideo()"
         class="w-full py-3 rounded-lg font-bold bg-[#10B981] hover:bg-[#059669] text-black transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
       >
         {{ carregandoVooVideo() ? 'Executando...' : 'Testar Voo + Vídeo' }}
@@ -109,7 +122,7 @@
 
       <button
         (click)="pararVideo()"
-        [disabled]="!exibirVideo"
+        [disabled]="!exibirVideo()"
         class="w-full py-3 rounded-lg font-bold border border-gray-600 text-gray-200 hover:bg-white/5 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100"
       >
         Parar Vídeo
